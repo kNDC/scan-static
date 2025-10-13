@@ -8,15 +8,10 @@
             "type": "lldb",
             "request": "launch",
             "name": "Launch StaticScan",
-            "program": "${workspaceFolder}/build/StaticScan",
-            "args": [
-                "-i",
-                "input.txt",
-                "--command",
-                "checksum"
-            ],
-            "cwd": "${workspaceFolder}/build"
+            "program": "${workspaceFolder}/build/scan_tests",
+            "cwd": "${workspaceFolder}/build",
+            "preLaunchTask": "GCC: Build Debug app",
+            "initCommands": ["settings set target.disable-aslr false"]
         }
-
     ]
 }
