@@ -130,8 +130,6 @@ namespace stdx::internals
     consteval format_string<fs>::PosArray 
     format_string<fs>::get_placeholder_positions()
     {
-        static_assert(!!n_placeholders);
-
         PosArray out;
         size_t pos = 0;
         size_t i = 0;

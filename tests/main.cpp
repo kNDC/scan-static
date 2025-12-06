@@ -25,7 +25,7 @@ void FixedString_Tests()
             []()
             {
                 std::array<char, 10> out;
-                for (size_t i = 0; i < 10; ++i) out[i] = i;
+                for (char i = 0; i < 10; ++i) out[i] = i;
                 return out;
             }();
 
@@ -410,6 +410,15 @@ void Scan_Tests()
             scan<runtime_format, source_, int>();
     }
     */
+
+    /* Не скомипилируется
+    {
+        constexpr fixed_string source_{"123456"};
+        constexpr format_string<"{%u}"> runtime_format;
+        constexpr scan_result result = 
+            scan<runtime_format, source_, int>();
+    }
+    */
 }
 
 int main(int argc, char* argv[])
@@ -421,6 +430,6 @@ int main(int argc, char* argv[])
     Double_Parse_Tests();
     StringView_Parse_Tests();
     Composite_Parse_Tests();
-    
+
     Scan_Tests();
 }

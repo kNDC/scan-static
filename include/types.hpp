@@ -22,6 +22,11 @@ namespace stdx::internals
             std::copy_n(cstr, capacity, data);
         }
 
+        constexpr basic_fixed_string(const basic_fixed_string<CharT, capacity>& other)
+        {
+            std::copy_n(other.data, capacity, data);
+        }
+
         template <size_t cstr_capacity>
         constexpr basic_fixed_string(const CharT (&cstr)[cstr_capacity])
         {
