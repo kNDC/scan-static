@@ -1,18 +1,33 @@
 #pragma once
 
-#include <tuple>
-
-#include "parse.hpp"
-#include "format_string.hpp"
 #include "types.hpp"
+#include "format_string.hpp"
+#include "parse.hpp"
 
-namespace stdx {
+namespace stdx
+{
+    using namespace stdx::internals;
 
-// Главная функция
-template <details::format_string fmt, details::fixed_string source, typename... Ts>
-consteval details::scan_result<Ts...> scan() { // передайте пакет параметров в scan_result
-// измените реализацию
-    return details::scan_result<Ts...>{42};
-}
+    // Главная функция
+    template <format_string format, 
+        fixed_string source, typename... Ts>
+    [[nodiscard]] consteval scan_result<Ts...> scan()
+    {
+        using namespace stdx::internals;
 
+        /* Можно обыграть с помощью requires, но так можно в 
+        явном виде прописать указание на причину ошибки. */
+        static_assert((... && (!std::is_reference_v<Ts> && 
+            (std::is_integral_v<Ts> || 
+            std::is_floating_point_v<Ts> || 
+            std::is_same_v<Ts, std::string_view>))),
+            "Only integral types, float, double and "
+            "std::string_view are accepted; "
+            "references are not permitted");
+
+        return []<size_t... I>(indices<I...>)
+            {
+                return scan_result<Ts...>{parse_input<I, format, source, Ts>()...};
+            }(generate_indices<format.n_placeholders>{});
+    }
 } // namespace stdx
