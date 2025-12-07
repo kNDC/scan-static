@@ -1,96 +1,155 @@
 #pragma once
 
+#include "types.hpp"
+#include <array>
 #include <expected>
 
-#include "types.hpp"
-
-namespace stdx::details {
-
-// Шаблонный класс для хранения форматирующей строчки и ее особенностей
-// ваш код здесь
-class format_string {
-    // ваш код здесь
-};
-
-// Пользовательский литерал
-/*
-ваш код здесь
-ваш код здесь operator"" _fs()  сигнатуру также поменяйте
+namespace stdx::internals
 {
-ваш код здесь
-}
-*/
+    // Шаблонный класс для хранения форматирующей строчки и ее особенностей
+    // ваш код здесь
+    template <fixed_string fs>
+    class format_string
+    {
+    private:
+        /* Функция для получения количества плейсхолдеров и 
+        проверки корректности формирующей строки */
+        consteval static std::expected<size_t, parse_error>
+        get_placeholder_count();
 
-// Функция для получения количества плейсхолдеров и проверки корректности формирующей строки
-// Функция закомментирована, так как еще не реализованы классы, которые она использует
-/*
-// Сделайте эту свободную функцию методом класса format_string
-template<fixed_string str>
-consteval std::expected<size_t, parse_error> get_number_placeholders() {
-    constexpr size_t N = str.size();
-    if (!N)
-        return 0;
-    size_t placeholder_count = 0;
-    size_t pos = 0;
-    const size_t size = N - 1; // -1 для игнорирования нуль-терминатора
+        // Функция проверяет, что нет ошибки, и присваивает ответ
+        consteval static size_t assign_placeholder_count();
 
-    while (pos < size) {
-        // Пропускаем все символы до '{'
-        if (str.data[pos] != '{') {
-            ++pos;
-            continue;
-        }
+    public:
+        constexpr static const fixed_string<fs.size + 1>& str = fs;
 
-        // Проверяем незакрытый плейсхолдер
-        if (pos + 1 >= size) {
-            return std::unexpected(parse_error{"Unclosed last placeholder"});
-        }
+        /* При ошибке обработки попытка положить parse_error в 
+        n_placeholders породит ошибку компиляции. */
+        constexpr static size_t n_placeholders = 
+            assign_placeholder_count();
 
-        // Начало плейсхолдера
-        ++placeholder_count;
-        ++pos;
+    private:
+        // Функция для получения позиций плейсхолдеров
+        using PosArray = std::array<std::pair<size_t, size_t>, n_placeholders>;
+        consteval static PosArray get_placeholder_positions();
 
-        // Проверка спецификатора формата
-        if (str.data[pos] == '%') {
-            ++pos;
-            if (pos >= size) {
-                return std::unexpected(parse_error{"Unclosed last placeholder"});
-            }
+    public:
+        constexpr static PosArray placeholder_positions = 
+            get_placeholder_positions();
+    };
 
-            // Проверяем допустимые спецификаторы
-            const char spec = str.data[pos];
-            constexpr char valid_specs[] = {'d', 'u', 'f', 's'};
-            bool valid = false;
-
-            for (const char s : valid_specs) {
-                if (spec == s) {
-                    valid = true;
-                    break;
-                }
-            }
-
-            if (!valid) {
-                return std::unexpected(parse_error{"Invalid specifier."});
-            }
-            ++pos;
-        }
-
-        // Проверяем закрывающую скобку
-        if (pos >= size || str.data[pos] != '}') {
-            return std::unexpected(parse_error{"\'}\' hasn't been found in appropriate place"});
-        }
-        ++pos;
+    // Пользовательский литерал
+    template <fixed_string fs>
+    constexpr auto operator""_fs()
+    {
+        return fs;
     }
 
-    return placeholder_count;
-}
-*/
+    template <fixed_string fs>
+    consteval std::expected<size_t, parse_error> 
+    format_string<fs>::get_placeholder_count()
+    {
+        if constexpr (str.empty()) return 0;
 
-// Функция для получения позиций плейсхолдеров
+        size_t out = 0;
+        size_t pos = 0;
 
-// ваш код здесь
-void get_placeholder_positions() {  // сигнатуру тоже нужно изменить
-    // ваш код здесь
-}
+        while (pos < str.size)
+        {
+            // Пропускаем все символы до '{'
+            if (str.data[pos] != '{')
+            {
+                ++pos;
+                continue;
+            }
 
-} // namespace stdx::details
+            // Проверка на незакрытость
+            if (pos >= str.size)
+            {
+                return std::unexpected(parse_error{"Missing closing brace"});
+            }
+
+            // Начало плейсхолдера
+            ++out;
+            ++pos;
+
+            // Проверка спецификатора формата
+            if (str.data[pos] == '%')
+            {
+                ++pos;
+                if (pos >= str.size)
+                {
+                    return std::unexpected(parse_error{"Missing closing brace"});
+                }
+
+                // Проверка допустимости спецификатора
+                const char spec = str.data[pos];
+                constexpr char valid_specs[] = {'d', 'u', 's', 'f'};
+                bool valid = false;
+
+                for (const char s : valid_specs)
+                {
+                    if (spec == s)
+                    {
+                        valid = true;
+                        break;
+                    }
+                }
+
+                if (!valid)
+                {
+                    return std::unexpected(parse_error{"Invalid specifier"});
+                }
+                ++pos;
+            }
+
+            // Проверка наличия закрывающей скобки
+            if (pos >= str.size || str.data[pos] != '}')
+            {
+                return std::unexpected(parse_error{"Missing closing brace"});
+            }
+            ++pos;
+        }
+
+        return out;
+    }
+
+    template <fixed_string fs>
+    consteval size_t format_string<fs>::assign_placeholder_count()
+    {
+        constexpr std::expected<size_t, parse_error> out = 
+            get_placeholder_count();
+        
+        static_assert(!!out, 
+            "Error parsing the format string");
+        
+        return *out;
+    }
+
+    template <fixed_string fs>
+    consteval format_string<fs>::PosArray 
+    format_string<fs>::get_placeholder_positions()
+    {
+        PosArray out;
+        size_t pos = 0;
+        size_t i = 0;
+
+        while (pos < str.size)
+        {
+            switch (str.data[pos])
+            {
+            case '{':
+                out[i].first = pos++;
+                break;
+            case '}':
+                out[i++].second = pos++;
+                break;
+            default:
+                ++pos;
+                break;
+            }
+        }
+
+        return out;
+    }
+}  // namespace stdx::internals

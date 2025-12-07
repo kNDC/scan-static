@@ -6,13 +6,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Используемые библиотеки
+find_package(GTest REQUIRED)
+
 set(target scan)
 
 add_library(${target} INTERFACE)
-
 target_include_directories(${target} INTERFACE include/)
 
-set(test_target scan_tests)
+# Поиск используемых файлов
+file(GLOB TEST_SRC_FILES "${CMAKE_SOURCE_DIR}/tests/*.cpp")
 
-add_executable(${test_target} tests/main.cpp)
-target_link_libraries(${test_target} PRIVATE ${target})
+add_executable(unit_tests "${TEST_SRC_FILES}")
+target_link_libraries(unit_tests 
+    PRIVATE ${target})
+
+# Включение проверок
+enable_testing()
+add_test(NAME Tests COMMAND tests)

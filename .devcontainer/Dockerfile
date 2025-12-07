@@ -28,7 +28,7 @@ ARG USER_GID
 RUN printf "\n\n\nReceived args:\n\tUSERNAME=$USERNAME\n\tUSER_UID=$USER_UID\n\tUSER_GID=$USER_GID\n"
 RUN test -n "$USER_UID" && test -n "$USER_GID" || (printf "\n\n\n\tERROR: USER_UID (equal to '$USER_UID') or USER_GID (equal to '$USER_GID') is not set!\n\n\n" && exit 1)
 
-# Delete Ubuntu user to avoid "UID/GID is already exists" problems
+# Delete Ubuntu user to avoid "UID/GID already exists" problems
 RUN set -e; \
     if id -u ubuntu >/dev/null 2>&1; then \
         echo "Delete 'ubuntu' user from the base image"; \

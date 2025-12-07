@@ -5,13 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
+            "type": "cppdbg",
             "request": "launch",
             "name": "Launch StaticScan",
-            "program": "${workspaceFolder}/build/scan_tests",
+            "program": "${workspaceFolder}/build/unit_tests",
             "cwd": "${workspaceFolder}/build",
-            "preLaunchTask": "GCC: Build Debug app",
-            "initCommands": ["settings set target.disable-aslr false"]
+            "preLaunchTask": "GCC: Build Debug app"
         }
     ]
 }
