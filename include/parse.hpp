@@ -115,13 +115,13 @@ namespace stdx::internals
     template <fixed_string fs, typename IntType,
         std::enable_if_t<!std::is_same_v<IntType, int> &&
         std::is_integral_v<IntType>>* = nullptr>
-        consteval IntType parse_value()
+    consteval IntType parse_value()
     {
         constexpr int out = parse_value<fs, int>();
 
         if constexpr (std::is_same_v<IntType, int8_t>)
         {
-            static_assert(std::abs(out) <= 0x7f,
+            static_assert(((out >= 0) ? out : -out) <= 0x7f,
                 "Integer overflow");
             return (int8_t)out;
         }
@@ -135,7 +135,7 @@ namespace stdx::internals
 
         if constexpr (std::is_same_v<IntType, int16_t>)
         {
-            static_assert(std::abs(out) <= 0x7f'ff,
+            static_assert(((out >= 0) ? out : -out) <= 0x7f'ff,
                 "Integer overflow");
             return (int16_t)out;
         }
@@ -149,7 +149,7 @@ namespace stdx::internals
 
         if constexpr (std::is_same_v<IntType, int32_t>)
         {
-            static_assert(std::abs(out) <= 0x7f'ff'ff'ff,
+            static_assert(((out >= 0) ? out : -out) <= 0x7f'ff'ff'ff,
                 "Integer overflow");
             return (int32_t)out;
         }
@@ -243,7 +243,7 @@ namespace stdx::internals
                     &fs.data[exp_pos + exp_capacity] };
             exp = parse_value<exp_fs, int>();
 
-            for (size_t i = 0; i < std::abs(exp); ++i)
+            for (size_t i = 0; i < ((exp >= 0) ? exp : -exp); ++i)
             {
                 factor *= 10;
             }
@@ -286,25 +286,25 @@ namespace stdx::internals
     }
 
     template <char formatter, typename IntType,
-        std::enable_if_t<std::is_signed_v<IntType>&&
+        std::enable_if_t<std::is_signed_v<IntType> &&
         formatter == 'd'>* = nullptr>
     consteval void format_value()
     {};
 
     template <char formatter, typename UIntType,
-        std::enable_if_t<std::is_unsigned_v<UIntType>&&
+        std::enable_if_t<std::is_unsigned_v<UIntType> &&
         formatter == 'u'>* = nullptr>
     consteval void format_value()
     {};
 
     template <char formatter, typename StringType,
-        std::enable_if_t<std::is_same_v<StringType, std::string_view>&&
+        std::enable_if_t<std::is_same_v<StringType, std::string_view> &&
         formatter == 's'>* = nullptr>
     consteval void format_value()
     {};
 
     template <char formatter, typename FloatType,
-        std::enable_if_t<std::is_floating_point_v<FloatType>&&
+        std::enable_if_t<std::is_floating_point_v<FloatType> &&
         formatter == 'f'>* = nullptr>
     consteval void format_value()
     {};

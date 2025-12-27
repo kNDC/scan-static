@@ -1,5 +1,10 @@
 #include "scan.hpp"
 
+constexpr double abs_(double val)
+{
+    return val >= 0 ? val : -val;
+}
+
 void FixedString_Tests()
 {
     using namespace stdx::internals;
@@ -159,63 +164,63 @@ void Double_Parse_Tests()
         constexpr fixed_string source{"123e4"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val - 123e4) < 1e-6);
+        static_assert(abs_(val - 123e4) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"123E4"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val - 123e4) < 1e-6);
+        static_assert(abs_(val - 123e4) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"+123.456e8"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val - 123.456e8) < 1e-6);
+        static_assert(abs_(val - 123.456e8) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-123456.789"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 123456.789) < 1e-6);
+        static_assert(abs_(val + 123456.789) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-1234e"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 1234.0) < 1e-6);
+        static_assert(abs_(val + 1234.0) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-.1234"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 0.1234) < 1e-6);
+        static_assert(abs_(val + 0.1234) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-1.234e-2"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 1.234e-2) < 1e-6);
+        static_assert(abs_(val + 1.234e-2) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-1.00234e-2"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 1.00234e-2) < 1e-6);
+        static_assert(abs_(val + 1.00234e-2) < 1e-6);
     }
 
     {
         constexpr fixed_string source{"-1.0123e-3f"};
         constexpr double val = 
             parse_input<0, format, source, double>();
-        static_assert(std::abs(val + 1.0123e-3) < 1e-6);
+        static_assert(abs_(val + 1.0123e-3) < 1e-6);
     }
 
     /* Не скомпилируется
@@ -314,7 +319,7 @@ void Composite_Parse_Tests()
     
     constexpr double dbl_val = 
         parse_input<2, format, source, double>();
-    static_assert(std::abs(dbl_val - 3.14159265e-1) < 1e-7);
+    static_assert(abs_(dbl_val - 3.14159265e-1) < 1e-7);
 }
 
 void Scan_Tests()
@@ -338,7 +343,7 @@ void Scan_Tests()
         static_assert(std::get<0>(result.values) == 3);
         static_assert(std::get<1>(result.values) == 9876);
         static_assert(std::get<2>(result.values) == "STRING"sv);
-        static_assert(std::abs(std::get<3>(result.values) - 2.718281828) < 1e-7);
+        static_assert(abs_(std::get<3>(result.values) - 2.718281828) < 1e-7);
     }
 
     {
