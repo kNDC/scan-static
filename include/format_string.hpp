@@ -40,7 +40,7 @@ namespace stdx::internals
 
     // Пользовательский литерал
     template <fixed_string fs>
-    constexpr auto operator""_fs()
+    constexpr fixed_string<fs.size + 1> operator""_fs()
     {
         return fs;
     }
@@ -84,7 +84,7 @@ namespace stdx::internals
 
                 // Проверка допустимости спецификатора
                 const char spec = str.data[pos];
-                constexpr char valid_specs[] = {'d', 'u', 's', 'f'};
+                constexpr char valid_specs[] = {'d', 'u', 'f', 's'};
                 bool valid = false;
 
                 for (const char s : valid_specs)
@@ -122,6 +122,8 @@ namespace stdx::internals
         
         static_assert(!!out, 
             "Error parsing the format string");
+        // static_assert(!!out, 
+        //     ((fixed_string<PARSE_ERR_CAPACITY>*)&out.error())->sv());
         
         return *out;
     }
